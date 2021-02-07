@@ -12,6 +12,9 @@ const createRootReducer = () => combineReducers({
   posts: reducerPosts
 })
 
-const store = createStore(createRootReducer(), composeWithDevTools())
+const store = createStore(
+  createRootReducer(),
+  composeWithDevTools()
+)
 
 export { store }

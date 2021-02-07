@@ -1,50 +1,54 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { FiHeart } from "react-icons/fi";
+import { useDispatch, useSelector } from "react-redux";
+import { getPosts, setLike } from "../../store/ducks/posts/actions";
+import { PostItem, PostsState } from "../../store/ducks/posts/types";
 
 const Posts = () => {
-    const [postList, setPostList] = useState<any[]>([])
+    const dispatch = useDispatch()
 
-    function buscaPost() {
-        axios.get("http://localhost:4000/posts")
-            .then(resposta => setPostList(resposta.data))
-    }
+    const listaPosts = useSelector((state: PostsState) => state.posts.arrayPosts)
+    const posts = useSelector((state: any) => state.posts.arrayPost)
+
     useEffect(() => (
-        buscaPost()
-    ),[]) 
+        buscaPosts()
+    ), [posts])
 
-    function atualizaLike(item: any) {
-        const requisicao = {
-            likes: item.likes + 1
-        }
-        
-        axios.patch(`http://localhost:4000/posts/${item.id}`, requisicao);
-        buscaPost()
+    const buscaPosts = () => {
+        axios.get("http://localhost:4000/posts")
+            .then(resposta => dispatch(getPosts(resposta.data)))
     }
+
+    function somaLike(item: any) {
+        dispatch(setLike(item))
+        buscaPosts()
+    }
+    /*function deletaPost(id: number) {
+        axios.delete(`http://localhost:4000/posts/${id}`)
+        buscaPosts()
+    }*/
 
     return (
         <>
-            {
-                postList && postList.slice(0).reverse().map((item: any) => ( //slice com o reverse permite trazer o post mais recente, ou seja, maior ID
-                    <div key={item.id} className="post">
-
-                        <header>
-                            <img src={item.userPicture} alt="user" />
-                            <div className="post-user">
-                                <strong>{item.user}</strong>
-                                <span>{item.location}</span>
-                            </div>
-                        </header>
-                        <div className="post-image">
-                            <img src={item.postPicture} alt="post" />
+            {((listaPosts !== undefined) && (listaPosts !== null)) && listaPosts.slice(0).reverse().map((item: PostItem) => (
+                <div className="post">
+                    <header>
+                        <img src={item.userPicture} alt={item.user} />
+                        <div className="post-user">
+                            <strong>{item.user}</strong>
+                            <span>{item.location}</span>
                         </div>
-                        <div className="post-likes">
-                            <FiHeart onClick={() => atualizaLike(item)} />{item.likes}
-                        </div>
-                        <p>{item.description}</p>
+                    </header>
+                    <div className="post-image">
+                        <img src={item.postPicture} alt="post" />
                     </div>
-                ))
-            }
+                    <div className="post-likes">
+                        <FiHeart onClick={() => somaLike(item)} />{item.likes} {/* <button onClick={() => deletaPost(item.id)}> X </button>*/}
+                    </div>
+                    <p>{item.description}</p>
+                </div>
+            ))}
         </>
     )
 }

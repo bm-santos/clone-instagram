@@ -1,29 +1,31 @@
 import axios from 'axios';
-import React, { useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getPosts, setPost } from '../../store/ducks/posts/actions';
 
 const Form = () => {
 
   let urlInput = useRef<HTMLInputElement>(null)
   let descricaoInput = useRef<HTMLInputElement>(null)
 
-  const { likes } = useSelector((state: any) => state.posts)
-  console.log(likes)
+  const { name, userPicture } = useSelector((state: any) => state.user)
+  const dispatch = useDispatch()
+ 
+  const buscaPosts = () => {
+    axios.get("http://localhost:4000/posts")
+        .then(resposta => dispatch(getPosts(resposta.data)))
+}
   function newPost() {
-
-    
-    const requisicao = {
-
-      user: "teste",
-      userPicture: "teste",
+    const requisicao: any = {
+      user: name,
+      userPicture: userPicture,
       postPicture: urlInput.current?.value,
-      location: "teste",
+      location: "Brasil",
       description: descricaoInput.current?.value,
       likes: 0
     }
-
-//    axios.post("http://localhost:4000/posts/", requisicao)
-  //  axios.get("http://localhost:4000/posts/")
+    dispatch(setPost(requisicao))
+    buscaPosts()
   }
 
   return (
